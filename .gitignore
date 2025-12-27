@@ -2,7 +2,7 @@
 logs/
 out/
 dist/
-build/
+_artifacts/
 downloads/
 
 # python
