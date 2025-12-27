@@ -1,0 +1,24 @@
+# outputs
+logs/
+out/
+dist/
+build/
+downloads/
+
+# python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# windows
+Thumbs.db
+Desktop.ini
+
+# archives/binaries
+*.zip
+*.7z
+*.rar
+*.exe
+*.msi
+*.cab
