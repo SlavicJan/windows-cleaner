@@ -1,34 +1,64 @@
-name: Release (portable)
+name: Build and Release
+
+# This workflow builds both the portable ZIP and a PyInstaller executable for the WinMaintain
+# toolkit on tag pushes.  The resulting artefacts are uploaded as release assets.
 
 on:
   push:
     tags:
-      - "v*"
-  workflow_dispatch: {}
-
-permissions:
-  contents: write
+      - '*'
 
 jobs:
-  build-portable:
+  build:
     runs-on: windows-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-      - name: Build portable zip
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if exist requirements.txt (pip install -r requirements.txt)
+          pip install pyinstaller
+
+      - name: Build portable ZIP
         shell: pwsh
         run: |
-          ./build/build_portable.ps1 -Version "${{ github.ref_name }}"
+          # Build the portable ZIP using the existing build script if it exists
+          if (Test-Path "build/build_portable.ps1") {
+              & "build/build_portable.ps1"
+          } else {
+              Write-Host "No build script found; skipping portable ZIP build."
+          }
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: WinMaintain_Portable
-          path: dist/*.zip
+      - name: Build PyInstaller executable
+        run: |
+          # Use PyInstaller to create a standalone EXE of the Python scanner
+          if exist toolkit\win_maintain.py (
+            pyinstaller --noconfirm --onefile toolkit\win_maintain.py --name WinMaintainScanner
+          ) else (
+            echo "Source script not found; skipping PyInstaller build."
+          )
 
-      - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*.zip
+      - name: Upload Release Assets
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Determine version from tag name (strip refs/tags/ prefix)
+          $tag = "$env:GITHUB_REF" -replace "refs/tags/", ""
+          Write-Host "Tag version detected: $tag"
+
+          # Upload portable ZIP if it exists
+          if (Test-Path "dist/portable.zip") {
+            gh release upload $tag "dist/portable.zip" --clobber
+          }
+          # Upload PyInstaller EXE if it exists
+          if (Test-Path "dist/WinMaintainScanner.exe") {
+            gh release upload $tag "dist/WinMaintainScanner.exe" --clobber
+          }
