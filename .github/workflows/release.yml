@@ -1,10 +1,13 @@
-name: Release Portable
+name: Release (portable)
 
 on:
   push:
     tags:
       - "v*"
   workflow_dispatch: {}
+
+permissions:
+  contents: write
 
 jobs:
   build-portable:
@@ -13,21 +16,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build portable ZIP
+      - name: Build portable zip
         shell: pwsh
         run: |
-          ./build/build_portable.ps1
+          ./build/build_portable.ps1 -Version "${{ github.ref_name }}"
 
-      - name: Upload artifact (for debugging)
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: WinMaintain_Portable_zip
+          name: WinMaintain_Portable
           path: dist/*.zip
 
-      - name: Create GitHub Release (tag builds)
+      - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

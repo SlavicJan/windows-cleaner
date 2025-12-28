@@ -1,24 +1,33 @@
 param(
-  [string]$Version = $env:GITHUB_REF_NAME
+  [string]$Version = "dev"
 )
 
-# Build a portable ZIP where toolkit contents are at the ZIP root
 $ErrorActionPreference = "Stop"
 
-$repo = Split-Path -Parent $PSScriptRoot
-$dist = Join-Path $repo "dist"
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+$dist = Join-Path $repoRoot "dist"
+$toolkit = Join-Path $repoRoot "toolkit"
+
+if (!(Test-Path $toolkit)) { throw "toolkit/ folder not found at $toolkit" }
+
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
 
-if (-not $Version -or $Version.Trim() -eq "") {
-  $Version = (Get-Date -Format "yyyyMMdd_HHmm")
-}
+$zipName = "WinMaintain_Portable_{0}.zip" -f $Version
+$zipPath = Join-Path $dist $zipName
 
-$zip = Join-Path $dist ("WinMaintain_Portable_{0}.zip" -f $Version)
+if (Test-Path $zipPath) { Remove-Item -Force $zipPath }
 
-# NOTE: zip CONTENTS of toolkit, not the folder itself
-$toolkitGlob = Join-Path $repo "toolkit\*"
+# Create a clean temp staging folder
+$tmp = Join-Path $env:TEMP ("winmaintain_stage_" + [Guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 
-if (Test-Path $zip) { Remove-Item -Force $zip }
-Compress-Archive -Path $toolkitGlob -DestinationPath $zip -Force
+Copy-Item -Recurse -Force (Join-Path $toolkit "*") $tmp
 
-Write-Host ("Built: {0}" -f $zip)
+# Ensure line endings are okay for BAT/PS1 (best-effort)
+# (No conversion here; keep whatever repo has)
+
+Compress-Archive -Path (Join-Path $tmp "*") -DestinationPath $zipPath -Force
+
+Remove-Item -Recurse -Force $tmp
+
+Write-Host "Built: $zipPath"

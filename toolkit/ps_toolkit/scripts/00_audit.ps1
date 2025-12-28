@@ -71,13 +71,21 @@ Write-Json $result $outJson
 Write-Section "Top dirs in user profile (quick)"
 try {
   $root = $env:USERPROFILE
-  Get-ChildItem $root -Directory -Force -ErrorAction SilentlyContinue |
+  Get-ChildItem -LiteralPath $root -Directory -Force -ErrorAction SilentlyContinue |
     ForEach-Object {
-      $sum = (Get-ChildItem $_.FullName -File -Recurse -Force -ErrorAction SilentlyContinue |
-              Measure-Object Length -Sum).Sum
+      $sum = 0
+      try {
+        $m = Get-ChildItem -LiteralPath $_.FullName -File -Recurse -Force -ErrorAction SilentlyContinue |
+             Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue
+        if ($null -ne $m -and ($m.PSObject.Properties.Name -contains "Sum") -and $null -ne $m.Sum) {
+          $sum = [int64]$m.Sum
+        }
+      } catch { $sum = 0 }
       [pscustomobject]@{ Path = $_.FullName; GB = [math]::Round($sum/1GB,2) }
     } | Sort-Object GB -Descending | Select-Object -First 15 | Format-Table -AutoSize
-} catch { }
+} catch {
+  Write-Host ("Top dirs skipped: {0}" -f $_.Exception.Message)
+}
 
 Write-Host ""
 Write-Host "Transcript saved to: $transcript"

@@ -1,98 +1,141 @@
-# sysinfo.ps1
-# Outputs basic system information as JSON (safe/read-only)
+# WinMaintain sysinfo
+# Outputs JSON with system info to out\sysinfo_*.json (or prints to stdout if -OutFile not provided)
+param(
+  [string]$OutFile = ""
+)
 
 $ErrorActionPreference = "Stop"
 
-function Is-Admin {
-  $current = [Security.Principal.WindowsIdentity]::GetCurrent()
-  $principal = New-Object Security.Principal.WindowsPrincipal($current)
-  return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-}
-
-function Try-SecureBoot {
+function Test-IsAdmin {
   try {
-    $v = Confirm-SecureBootUEFI -ErrorAction Stop
-    return [bool]$v
-  } catch {
-    return $null
-  }
+    $id = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $p  = New-Object Security.Principal.WindowsPrincipal($id)
+    return $p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+  } catch { return $false }
 }
 
-function Try-TPM {
+function Get-UEFIType {
+  # 1=BIOS, 2=UEFI
+  try {
+    $v = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "PEFirmwareType" -ErrorAction Stop).PEFirmwareType
+    return [int]$v
+  } catch { return $null }
+}
+
+function Get-SecureBoot {
+  try {
+    # Throws on BIOS systems
+    return [bool](Confirm-SecureBootUEFI)
+  } catch { return $null }
+}
+
+function Get-TPMInfo {
+  $obj = [ordered]@{
+    present = $null
+    ready = $null
+    enabled = $null
+    activated = $null
+    owned = $null
+    manufacturer = $null
+    manufacturerVersion = $null
+    specVersion = $null
+  }
   try {
     $t = Get-Tpm -ErrorAction Stop
-    return @{
-      Present = [bool]$t.TpmPresent
-      Ready   = [bool]$t.TpmReady
-      Enabled = [bool]$t.TpmEnabled
-      Activated = [bool]$t.TpmActivated
-      ManagedAuthLevel = $t.ManagedAuthLevel
-    }
+    $obj.present = $t.TpmPresent
+    $obj.ready = $t.TpmReady
+    $obj.enabled = $t.TpmEnabled
+    $obj.activated = $t.TpmActivated
+    $obj.owned = $t.TpmOwned
+    $obj.manufacturer = $t.ManufacturerIdTxt
+    $obj.manufacturerVersion = $t.ManufacturerVersion
+    $obj.specVersion = $t.SpecVersion
   } catch {
-    return $null
+    # module missing / access denied
   }
+  return $obj
 }
 
-$cv = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-$fw = (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control").PEFirmwareType
-$fwMode = if ($fw -eq 2) { "UEFI" } elseif ($fw -eq 1) { "BIOS" } else { "Unknown" }
-
+$os = Get-CimInstance Win32_OperatingSystem
+$cs = Get-CimInstance Win32_ComputerSystem
 $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1
-$cs  = Get-CimInstance Win32_ComputerSystem | Select-Object -First 1
+$bios = Get-CimInstance Win32_BIOS | Select-Object -First 1
 $disks = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" | ForEach-Object {
-  [PSCustomObject]@{
-    Drive = $_.DeviceID
-    FreeBytes = [int64]$_.FreeSpace
-    SizeBytes = [int64]$_.Size
-    FreeGB = [math]::Round($_.FreeSpace / 1GB, 2)
-    SizeGB = [math]::Round($_.Size / 1GB, 2)
-    FileSystem = $_.FileSystem
-    VolumeName = $_.VolumeName
+  [ordered]@{
+    device = $_.DeviceID
+    volumeName = $_.VolumeName
+    size_gb = if ($_.Size) { [math]::Round($_.Size/1GB,2) } else { $null }
+    free_gb = if ($_.FreeSpace) { [math]::Round($_.FreeSpace/1GB,2) } else { $null }
+    free_pct = if ($_.Size -and $_.FreeSpace) { [math]::Round(100.0*$_.FreeSpace/$_.Size,1) } else { $null }
+    fileSystem = $_.FileSystem
   }
 }
 
-$py = Get-Command python -ErrorAction SilentlyContinue
-$pyVersion = $null
-if ($py) {
-  try { $pyVersion = (& python --version 2>&1).ToString().Trim() } catch {}
+$fwType = Get-UEFIType
+$secureBoot = Get-SecureBoot
+$isAdmin = Test-IsAdmin
+
+$py = $null
+try {
+  $cmd = Get-Command python -ErrorAction Stop
+  $py = $cmd.Source
+} catch {}
+
+$result = [ordered]@{
+  timestamp = (Get-Date).ToString("s")
+  computerName = $env:COMPUTERNAME
+  userName = $env:USERNAME
+  admin = $isAdmin
+
+  os = [ordered]@{
+    caption = $os.Caption
+    version = $os.Version
+    build = $os.BuildNumber
+    arch = $os.OSArchitecture
+    installDate = ($os.InstallDate).ToString("s")
+    lastBoot = ($os.LastBootUpTime).ToString("s")
+  }
+
+  hardware = [ordered]@{
+    manufacturer = $cs.Manufacturer
+    model = $cs.Model
+    ram_gb = [math]::Round($cs.TotalPhysicalMemory/1GB,2)
+    cpu = [ordered]@{
+      name = $cpu.Name
+      cores = $cpu.NumberOfCores
+      logicalProcessors = $cpu.NumberOfLogicalProcessors
+      maxClockMHz = $cpu.MaxClockSpeed
+    }
+    bios = [ordered]@{
+      vendor = $bios.Manufacturer
+      version = $bios.SMBIOSBIOSVersion
+      serial = $bios.SerialNumber
+    }
+  }
+
+  firmware = [ordered]@{
+    peFirmwareType = $fwType
+    uefi = if ($fwType -eq 2) { $true } elseif ($fwType -eq 1) { $false } else { $null }
+    secureBoot = $secureBoot
+  }
+
+  tpm = (Get-TPMInfo)
+
+  disks = @($disks)
+
+  python = [ordered]@{
+    found = [bool]$py
+    path = $py
+  }
 }
 
-$payload = [PSCustomObject]@{
-  Timestamp = (Get-Date).ToString("s")
-  ComputerName = $env:COMPUTERNAME
-  UserName = $env:USERNAME
-  IsAdmin = (Is-Admin)
+$json = $result | ConvertTo-Json -Depth 6
 
-  Windows = [PSCustomObject]@{
-    ProductName = $cv.ProductName
-    DisplayVersion = $cv.DisplayVersion
-    CurrentBuild = $cv.CurrentBuild
-    UBR = $cv.UBR
-    EditionID = $cv.EditionID
-  }
-
-  Firmware = [PSCustomObject]@{
-    Mode = $fwMode
-    SecureBootEnabled = (Try-SecureBoot)
-  }
-
-  TPM = (Try-TPM)
-
-  Hardware = [PSCustomObject]@{
-    CPU = $cpu.Name
-    Cores = $cpu.NumberOfCores
-    LogicalProcessors = $cpu.NumberOfLogicalProcessors
-    RAMBytes = [int64]$cs.TotalPhysicalMemory
-    RAMGB = [math]::Round($cs.TotalPhysicalMemory / 1GB, 2)
-  }
-
-  Disks = $disks
-
-  Python = [PSCustomObject]@{
-    Exists = [bool]$py
-    Version = $pyVersion
-    Path = if ($py) { $py.Source } else { $null }
-  }
+if ($OutFile -and $OutFile.Trim().Length -gt 0) {
+  $dir = Split-Path -Parent $OutFile
+  if ($dir -and !(Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+  $json | Out-File -FilePath $OutFile -Encoding UTF8
+  Write-Host "Saved: $OutFile"
+} else {
+  $json
 }
-
-$payload | ConvertTo-Json -Depth 6
