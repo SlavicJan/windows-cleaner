@@ -7,7 +7,7 @@ WinMaintain is a Windows 10/11 maintenance toolkit that focuses on **safe auditi
 ## What changed in this release
 - **Unified entry point** via `toolkit/START_HERE.bat` that detects the environment and hides Python-only actions when Python is missing.
 - **Environment autodetection** (Python version, Administrator, TPM/Secure Boot, free C: space) with a JSON report at `out/env_report.json` for support cases.
-- **Release automation** now publishes both a portable ZIP and a PyInstaller **WinMaintainScanner** EXE on every tag.
+- **Release automation** now publishes a portable ZIP, a full-menu **WinMaintain.exe** (PyInstaller), and the **WinMaintainScanner** CLI EXE on every tag.
 - Fresh branding assets under `assets/` plus updated docs for quick vs. full cleanup guidance.
 
 ## Features
@@ -19,8 +19,8 @@ WinMaintain is a Windows 10/11 maintenance toolkit that focuses on **safe auditi
 
 ## Getting started
 ### For non-technical users
-1. Download the latest **WinMaintain_Portable_{version}.zip** from the Releases page and extract it anywhere (e.g., `D:\WinMaintain`).
-2. Double-click `toolkit/START_HERE.bat`.
+1. Download the latest **WinMaintain.exe** or **WinMaintain_Portable_{version}.zip** from the Releases page. If you pick the ZIP, extract it anywhere (e.g., `D:\WinMaintain`).
+2. Double-click `WinMaintain.exe` (or `toolkit/START_HERE.bat` inside the ZIP) to open the menu.
 3. Read the environment line at the top (e.g., `Python=3.11 | Admin=No | TPM=Yes | SecureBoot=Yes | FreeC=12.5 GB`).
 4. Choose:
    - **Audit** to see where space is used.
@@ -29,12 +29,12 @@ WinMaintain is a Windows 10/11 maintenance toolkit that focuses on **safe auditi
    - **View environment report** to open/copy `out/env_report.json` for support.
 
 ### For technical users
-- Run the menu: `toolkit\START_HERE.bat`
-- Direct Python calls:
+- Run the menu: `WinMaintain.exe` (standalone) or `toolkit\START_HERE.bat`
+- Direct Python calls (add `--outdir` to change the default `out` folder for reports):
   ```powershell
   python toolkit\win_maintain.py scan
-  python toolkit\win_maintain.py cleanup --quick
-  python toolkit\win_maintain.py cleanup           # full
+  python toolkit\win_maintain.py cleanup           # dry-run
+  python toolkit\win_maintain.py cleanup --yes     # execute
   python toolkit\win_maintain.py backup-browsers
   python toolkit\win_collect_session.py
   ```
@@ -42,8 +42,14 @@ WinMaintain is a Windows 10/11 maintenance toolkit that focuses on **safe auditi
 
 ## Release artefacts
 - **Portable ZIP**: `WinMaintain_Portable_{tag}.zip` (runs the whole toolkit from any folder).
+- **WinMaintain EXE**: `WinMaintain_{tag}.exe` (PyInstaller one-file build of the menu-driven toolkit; no Python install needed).
 - **Scanner EXE**: `WinMaintainScanner_{tag}.exe` (PyInstaller one-file build of `toolkit/win_maintain.py`).
-- Both assets are attached automatically to GitHub releases on tagged pushes.
+- All three assets are attached automatically to GitHub releases on tagged pushes.
+
+## Where to find reports
+- Python scanner and cleanup: `out/` (next to the EXE or toolkit folder).
+- PowerShell audits: `toolkit/ps_toolkit/logs/YYYY-MM-DD/` (created automatically when you run the PS audit scripts).
+- Session collections: destination folder you chose in the log collection step (defaults to `D:\Backups\WinSession`).
 
 ## Repository layout
 ```

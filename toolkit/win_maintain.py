@@ -694,7 +694,6 @@ def main():
         sys.exit(1)
 
     ap = argparse.ArgumentParser("win_maintain", description="Scan + safe cleanup + browser backup for Windows 10/11.")
-    #ap.add_argument(("--outdir", default=str(DEFAULT_OUTDIR)), help="Output dir for reports (default: current).")
     ap.add_argument("--outdir", default=str(DEFAULT_OUTDIR), help="Output dir for reports (default: current).")
 
 
@@ -738,7 +737,7 @@ def main():
     sp_trim.set_defaults(func=cmd_trim)
 
     args = ap.parse_args()
-    if not hasattr(args, \"outdir\"):
+    if not hasattr(args, 'outdir'):
         args.outdir = str(DEFAULT_OUTDIR)
     args.func(args)
 

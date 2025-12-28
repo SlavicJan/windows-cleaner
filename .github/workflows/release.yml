@@ -37,7 +37,7 @@ jobs:
             Write-Host "No build script found; skipping portable ZIP build."
           }
 
-      - name: Build PyInstaller executable
+      - name: Build WinMaintainScanner executable
         shell: pwsh
         run: |
           $version = "$Env:VERSION"
@@ -47,6 +47,18 @@ jobs:
             pyinstaller --noconfirm --onefile toolkit/win_maintain.py --name $name
           } else {
             Write-Host "Source script not found; skipping PyInstaller build."
+          }
+
+      - name: Build WinMaintain menu executable
+        shell: pwsh
+        run: |
+          $version = "$Env:VERSION"
+          if ([string]::IsNullOrWhiteSpace($version)) { $version = "dev" }
+          $name = "WinMaintain_{0}" -f $version
+          if (Test-Path "toolkit/winmaintain_gui.py") {
+            pyinstaller --noconfirm --onefile toolkit/winmaintain_gui.py --name $name --hidden-import win_maintain --hidden-import win_collect_session
+          } else {
+            Write-Host "GUI wrapper not found; skipping WinMaintain.exe build."
           }
 
       - name: Upload Release Assets
@@ -62,6 +74,8 @@ jobs:
           $zipPath = Join-Path "$Env:GITHUB_WORKSPACE" "dist/$zipName"
           $exeName = "WinMaintainScanner_{0}.exe" -f $tag
           $exePath = Join-Path "$Env:GITHUB_WORKSPACE" "dist/$exeName"
+          $guiName = "WinMaintain_{0}.exe" -f $tag
+          $guiPath = Join-Path "$Env:GITHUB_WORKSPACE" "dist/$guiName"
 
           Write-Host "Uploading assets for tag $tag"
           if (Test-Path $zipPath) {
@@ -74,4 +88,10 @@ jobs:
             gh release upload $tag $exePath --clobber
           } else {
             Write-Host "PyInstaller EXE not found at $exePath"
+          }
+
+          if (Test-Path $guiPath) {
+            gh release upload $tag $guiPath --clobber
+          } else {
+            Write-Host "WinMaintain.exe not found at $guiPath"
           }

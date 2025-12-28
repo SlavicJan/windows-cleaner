@@ -68,21 +68,33 @@ $outJson = Join-Path $LogDir ("audit_{0}_{1}.json" -f $env:COMPUTERNAME, (Get-Da
 Write-Host "Writing audit JSON -> $outJson"
 Write-Json $result $outJson
 
+function Get-DirSizeBytes([string]$Path) {
+  if (-not (Test-Path -LiteralPath $Path)) { return 0 }
+  $m = Get-ChildItem -LiteralPath $Path -Recurse -File -Force -ErrorAction SilentlyContinue |
+       Measure-Object -Property Length -Sum
+  if ($null -eq $m -or -not ($m.PSObject.Properties.Name -contains "Sum") -or $null -eq $m.Sum) { return 0 }
+  return [int64]$m.Sum
+}
+
 Write-Section "Top dirs in user profile (quick)"
 try {
-  $root = $env:USERPROFILE
-  Get-ChildItem -LiteralPath $root -Directory -Force -ErrorAction SilentlyContinue |
+  $candidates = @(
+    @{ Name = "LOCALAPPDATA"; Path = $env:LOCALAPPDATA },
+    @{ Name = "APPDATA"; Path = $env:APPDATA },
+    @{ Name = "TEMP"; Path = $env:TEMP }
+  )
+
+  $candidates |
     ForEach-Object {
-      $sum = 0
-      try {
-        $m = Get-ChildItem -LiteralPath $_.FullName -File -Recurse -Force -ErrorAction SilentlyContinue |
-             Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue
-        if ($null -ne $m -and ($m.PSObject.Properties.Name -contains "Sum") -and $null -ne $m.Sum) {
-          $sum = [int64]$m.Sum
-        }
-      } catch { $sum = 0 }
-      [pscustomobject]@{ Path = $_.FullName; GB = [math]::Round($sum/1GB,2) }
-    } | Sort-Object GB -Descending | Select-Object -First 15 | Format-Table -AutoSize
+      $sizeBytes = Get-DirSizeBytes -Path $_.Path
+      [pscustomobject]@{
+        Name = $_.Name
+        Path = $_.Path
+        SizeGB = [math]::Round($sizeBytes/1GB, 2)
+      }
+    } |
+    Sort-Object SizeGB -Descending |
+    Format-Table -AutoSize
 } catch {
   Write-Host ("Top dirs skipped: {0}" -f $_.Exception.Message)
 }
