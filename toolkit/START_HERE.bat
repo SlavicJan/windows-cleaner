@@ -1,7 +1,22 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
-cd /d "%~dp0"
+
+rem Always run from this script folder (handles weird launch contexts)
+pushd "%~dp0" >nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] Cannot access script folder: "%~dp0"
+  pause
+  exit /b 1
+)
+
+rem Repo root = parent of toolkit
+for %%I in ("%~dp0..") do set "ROOT=%%~fI"
+set "OUT=%ROOT%\out"
+set "LOGS=%ROOT%\logs"
+
+if not exist "%OUT%"  mkdir "%OUT%"  >nul 2>&1
+if not exist "%LOGS%" mkdir "%LOGS%" >nul 2>&1
 
 rem where outputs live (repo-root/out + repo-root/logs)
 if not exist "..\out"  mkdir "..\out"
