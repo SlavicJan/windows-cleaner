@@ -38,6 +38,7 @@ WinMaintain is a Windows 10/11 maintenance toolkit that focuses on **safe auditi
   python toolkit\win_maintain.py backup-browsers
   python toolkit\win_collect_session.py
   ```
+- Add `--outdir <path>` to place JSON reports elsewhere; if omitted they land in `out/` next to the toolkit.
 - Environment detection alone: `powershell -ExecutionPolicy Bypass -File toolkit\detect_env.ps1`
 
 ## Release artefacts

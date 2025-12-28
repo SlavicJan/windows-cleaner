@@ -4,6 +4,11 @@
 ## “Logs folder not found”
 Сначала запусти Audit или Full cleanup, затем Zip logs/session.
 
+## Где искать отчеты и логи
+- Python-сканер (`toolkit/win_maintain.py`) кладет JSON в `out/` (или в папку из `--outdir`).
+- PowerShell-аудит (`ps_toolkit/scripts/run_toolkit.ps1`) пишет логи по дате в `ps_toolkit/logs/YYYY-MM-DD`.
+- Меню START_HERE создает итоговые отчеты в `RUN/reports`.
+
 ## “Admin: False”
 Ты запустил режим без UAC. Для Full cleanup нужен админ (UAC окно).
 
