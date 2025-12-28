@@ -1,0 +1,1 @@
+v2 fixes PowerShell parsing on machines where UTF-8 without BOM breaks.

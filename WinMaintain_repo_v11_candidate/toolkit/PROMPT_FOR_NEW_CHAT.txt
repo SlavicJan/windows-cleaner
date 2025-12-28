@@ -1,0 +1,21 @@
+PROMPT FOR NEW CHAT (paste into a new ChatGPT conversation)
+----------------------------------------------------------
+Goal: consolidate Windows 10/11 maintenance scripts (scan + cleanup + backup) and analyze my logs.
+
+My PC:
+- Windows 10 Home 22H2 build 19045 (MSI MS-7817, i3-4170, 12 GB RAM)
+- System drive C: (SSD 240GB), data drive D: (lots of free space)
+- I freed space on C: to ~30+ GB using: powercfg -h off, DISM StartComponentCleanup, Windows Update cache cleanup, TEMP, browser/dev caches, NVIDIA caches.
+
+I have a toolkit folder with:
+- win_maintain.py (Python CLI) + .bat launchers (scan/cleanup/backup/session zip)
+- ps_toolkit (PowerShell cleanup toolkit) + transcripts
+- Collected logs and a session zip created by 07_collect_session_zip.bat (path example: D:\Backups\WinSession\win_session_YYYYMMDD_HHMMSS.zip)
+
+Please:
+1) Review logs (scan + audit JSON + transcripts) and list the top space hogs + safe reclaim actions.
+2) Suggest a stable unified workflow (order of actions, admin vs non-admin).
+3) Provide a backup checklist before any risky changes (Win11 bypass / reinstall): browsers (Edge/Yandex/Opera), documents, dev projects, licenses.
+4) Make the scripts more robust: handle locked browser files (Cookies), accept --outdir anywhere, self-elevate where needed, and keep a single "run_all" entry point.
+
+I can upload the session zip and the toolkit folder if needed.

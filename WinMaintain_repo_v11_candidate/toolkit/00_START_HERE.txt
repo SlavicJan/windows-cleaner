@@ -1,0 +1,32 @@
+00 - START HERE
+==============
+1) Extract this folder somewhere like D:\tools\win_maintain (avoid Downloads with long Russian paths if possible).
+2) Run in this order (recommended):
+   - 01_scan.bat              (creates reports in .\out)
+   - 02_cleanup_dryrun.bat     (shows what WOULD be deleted)
+   - 03_cleanup_execute.bat    (does the cleanup)
+   - 06_backup_browsers.bat    (browser profile backup; close browsers first)
+   - 07_collect_session_zip.bat (packs logs + history into a zip)
+3) OPTIONAL: PowerShell toolkit:
+   - 08_ps_audit_only.bat
+   - 09_ps_full_cleanup_admin.bat
+
+Common fixes:
+- If you see "unrecognized arguments: --outdir": you are running an OLD version. Use this pack's win_maintain.py (patched) + .bat files.
+- If browser backup fails with WinError 32 (Cookies locked): close browsers OR use option --kill-browsers.
+
+ONE-CLICK
+---------
+- ONE_CLICK_ALL_ADMIN.bat  (самый простой вариант: всё по очереди, с UAC)
+
+Если ловишь ошибку "unrecognized arguments: --outdir ."
+------------------------------------------------------
+Это означает, что --outdir нужно писать ДО команды:
+  python win_maintain.py --outdir out scan
+а не:
+  python win_maintain.py scan --outdir out
+
+
+If you don't have Python installed:
+- Run PowerShell-only options (08/09) or use the USB_TOOLS toolkit.
+- Or build/run the WinMaintainScanner.exe (PyInstaller) in the repo version.

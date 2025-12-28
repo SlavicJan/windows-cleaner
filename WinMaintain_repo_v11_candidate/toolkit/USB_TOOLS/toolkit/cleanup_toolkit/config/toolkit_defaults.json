@@ -1,0 +1,7 @@
+{
+  "defaults": {
+    "mode": "Full",
+    "no_ui": false,
+    "nvidia_mode": "remove_caches"
+  }
+}

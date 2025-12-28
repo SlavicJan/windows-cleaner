@@ -1,0 +1,20 @@
+
+# Build outputs
+dist/
+build/
+*.zip
+*.7z
+*.rar
+
+# Python
+python_app/.venv/
+**/__pycache__/
+*.pyc
+
+# .NET
+launcher/**/bin/
+launcher/**/obj/
+
+# OS
+.DS_Store
+Thumbs.db
