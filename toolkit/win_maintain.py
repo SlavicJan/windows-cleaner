@@ -694,7 +694,9 @@ def main():
         sys.exit(1)
 
     ap = argparse.ArgumentParser("win_maintain", description="Scan + safe cleanup + browser backup for Windows 10/11.")
-    ap.add_argument(("--outdir", default=str(DEFAULT_OUTDIR)), help="Output dir for reports (default: current).")
+    #ap.add_argument(("--outdir", default=str(DEFAULT_OUTDIR)), help="Output dir for reports (default: current).")
+    ap.add_argument("--outdir", default=str(DEFAULT_OUTDIR), help="Output dir for reports (default: current).")
+
 
     sub = ap.add_subparsers(dest="cmd", required=True)
 
