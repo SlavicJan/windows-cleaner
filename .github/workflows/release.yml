@@ -1,8 +1,5 @@
 name: Build and Release
 
-# This workflow builds both the portable ZIP and a PyInstaller executable for the WinMaintain
-# toolkit on tag pushes.  The resulting artefacts are uploaded as release assets.
-
 on:
   push:
     tags:
@@ -11,9 +8,11 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      VERSION: ${{ github.ref_name }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -29,36 +28,50 @@ jobs:
       - name: Build portable ZIP
         shell: pwsh
         run: |
-          # Build the portable ZIP using the existing build script if it exists
-          if (Test-Path "build/build_portable.ps1") {
-              & "build/build_portable.ps1"
+          $version = "$Env:VERSION"
+          if ([string]::IsNullOrWhiteSpace($version)) { $version = "dev" }
+          $scriptPath = Join-Path $Env:GITHUB_WORKSPACE "build/build_portable.ps1"
+          if (Test-Path $scriptPath) {
+            & $scriptPath -Version $version
           } else {
-              Write-Host "No build script found; skipping portable ZIP build."
+            Write-Host "No build script found; skipping portable ZIP build."
           }
 
       - name: Build PyInstaller executable
+        shell: pwsh
         run: |
-          # Use PyInstaller to create a standalone EXE of the Python scanner
-          if exist toolkit\win_maintain.py (
-            pyinstaller --noconfirm --onefile toolkit\win_maintain.py --name WinMaintainScanner
-          ) else (
-            echo "Source script not found; skipping PyInstaller build."
-          )
+          $version = "$Env:VERSION"
+          if ([string]::IsNullOrWhiteSpace($version)) { $version = "dev" }
+          $name = "WinMaintainScanner_{0}" -f $version
+          if (Test-Path "toolkit/win_maintain.py") {
+            pyinstaller --noconfirm --onefile toolkit/win_maintain.py --name $name
+          } else {
+            Write-Host "Source script not found; skipping PyInstaller build."
+          }
 
       - name: Upload Release Assets
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
         run: |
-          # Determine version from tag name (strip refs/tags/ prefix)
-          $tag = "$env:GITHUB_REF" -replace "refs/tags/", ""
-          Write-Host "Tag version detected: $tag"
+          $tag = "$Env:GITHUB_REF" -replace "refs/tags/", ""
+          if ([string]::IsNullOrWhiteSpace($tag)) { $tag = "dev" }
 
-          # Upload portable ZIP if it exists
-          if (Test-Path "dist/portable.zip") {
-            gh release upload $tag "dist/portable.zip" --clobber
+          $zipName = "WinMaintain_Portable_{0}.zip" -f $tag
+          $zipPath = Join-Path "$Env:GITHUB_WORKSPACE" "dist/$zipName"
+          $exeName = "WinMaintainScanner_{0}.exe" -f $tag
+          $exePath = Join-Path "$Env:GITHUB_WORKSPACE" "dist/$exeName"
+
+          Write-Host "Uploading assets for tag $tag"
+          if (Test-Path $zipPath) {
+            gh release upload $tag $zipPath --clobber
+          } else {
+            Write-Host "Portable ZIP not found at $zipPath"
           }
-          # Upload PyInstaller EXE if it exists
-          if (Test-Path "dist/WinMaintainScanner.exe") {
-            gh release upload $tag "dist/WinMaintainScanner.exe" --clobber
+
+          if (Test-Path $exePath) {
+            gh release upload $tag $exePath --clobber
+          } else {
+            Write-Host "PyInstaller EXE not found at $exePath"
           }

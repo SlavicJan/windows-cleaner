@@ -1,39 +1,45 @@
 @echo off
 :: WinMaintain unified entry point
-:: This batch script calls the environment detection PowerShell script and then
-:: displays a simple menu for the user.  It shows a summary of the current
-:: environment (Python version, administrative privileges, TPM and Secure Boot
-:: status, and free space on drive C).  An option is provided to view the
-:: full environment report saved by the PowerShell script.
+:: Shows environment summary and routes to audit/cleanup/backup tools.
 
-:: Ensure UTF‑8 output (Windows 10/11)
 chcp 65001 >nul
+setlocal EnableDelayedExpansion
 
-:: Run the environment detection script and capture the summary line into ENV_SUMMARY.
+set "REPORT_PATH=%~dp0..\out\env_report.json"
+set "ENV_SUMMARY=Collecting environment info..."
+set "HAS_PY=1"
+
+:: Run environment detection and capture summary
 for /F "usebackq delims=" %%E in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0detect_env.ps1"`) do (
     set "ENV_SUMMARY=%%E"
 )
 
-:: Display the environment summary at the top of the menu
-echo.
-echo ================================================================
-echo        WinMaintain Environment Summary
-echo    %ENV_SUMMARY%
-echo ================================================================
-echo.
+:: Prefer summary from the generated JSON if available (more reliable for parsing)
+if exist "%REPORT_PATH%" (
+    for /F "usebackq delims=" %%E in (`powershell -NoProfile -Command "(Get-Content -Raw '%REPORT_PATH%' | ConvertFrom-Json).summary"`) do (
+        set "ENV_SUMMARY=%%E"
+    )
+)
 
-:: Determine whether Python is available (disabled if Python=No in summary)
-set "HAS_PY=1"
-echo %ENV_SUMMARY% | find "Python=No" >nul 2>&1
-if %errorlevel% equ 0 (
-    set "HAS_PY=0"
+:: Determine Python availability using the JSON report
+if exist "%REPORT_PATH%" (
+    for /F "usebackq delims=" %%P in (`powershell -NoProfile -Command "if (Test-Path '%REPORT_PATH%') { $data = Get-Content -Raw '%REPORT_PATH%' | ConvertFrom-Json; if ($data.python_version) { '1' } else { '0' } }"`) do (
+        set "HAS_PY=%%P"
+    )
+) else (
+    echo !ENV_SUMMARY! | find "Python=No" >nul 2>&1 && set "HAS_PY=0"
 )
 
 :MENU
 echo.
+echo ================================================================
+echo        WinMaintain Environment Summary
+echo    !ENV_SUMMARY!
+echo ================================================================
+echo.
 echo Select an option:
 echo 1) Show system information
-if "%HAS_PY%"=="1" (
+if "!HAS_PY!"=="1" (
     echo 2) Run disk audit (requires Python)
     echo 3) Quick cleanup (requires Python)
     echo 4) Full cleanup (requires Python)
@@ -49,15 +55,16 @@ echo 0) Exit
 echo.
 set /p "CHOICE=Enter your choice: "
 
+echo.
 if "%CHOICE%"=="1" goto SYSINFO
 if "%CHOICE%"=="2" (
-    if "%HAS_PY%"=="1" (goto AUDIT) else (echo Python not available. Option disabled.& goto MENU)
+    if "!HAS_PY!"=="1" (goto AUDIT) else (echo Python not available. Option disabled.& goto MENU)
 )
 if "%CHOICE%"=="3" (
-    if "%HAS_PY%"=="1" (goto QUICK) else (echo Python not available. Option disabled.& goto MENU)
+    if "!HAS_PY!"=="1" (goto QUICK) else (echo Python not available. Option disabled.& goto MENU)
 )
 if "%CHOICE%"=="4" (
-    if "%HAS_PY%"=="1" (goto FULL) else (echo Python not available. Option disabled.& goto MENU)
+    if "!HAS_PY!"=="1" (goto FULL) else (echo Python not available. Option disabled.& goto MENU)
 )
 if "%CHOICE%"=="5" goto BACKUP
 if "%CHOICE%"=="6" goto COLLECT
@@ -66,54 +73,41 @@ if "%CHOICE%"=="0" goto END
 echo Invalid choice. Please try again.
 goto MENU
 
-:: Option implementations
 :SYSINFO
-echo.
 echo [INFO] Displaying system information...
 systeminfo | more
 goto MENU
 
 :AUDIT
-echo.
 echo [AUDIT] Running full disk audit...
-:: TODO: call the Python script for audit
 python "%~dp0win_maintain.py" scan
 goto MENU
 
 :QUICK
-echo.
 echo [QUICK] Running quick cleanup...
-:: TODO: call the Python script for quick cleanup
 python "%~dp0win_maintain.py" cleanup --quick
 goto MENU
 
 :FULL
-echo.
 echo [FULL] Running full cleanup...
-:: TODO: call the Python script for full cleanup
 python "%~dp0win_maintain.py" cleanup
 goto MENU
 
 :BACKUP
-echo.
 echo [BACKUP] Backing up browser profiles...
-:: TODO: implement backup logic or call existing PowerShell script
-echo Backup operation completed.
+python "%~dp0win_maintain.py" backup-browsers
 goto MENU
 
 :COLLECT
-echo.
 echo [COLLECT] Collecting log files...
-:: TODO: implement log collection logic or call existing script
-echo Logs collected.
+python "%~dp0win_collect_session.py"
 goto MENU
 
 :VIEWREPORT
-echo.
 echo Opening environment report...
-set "REPORT_PATH=%~dp0..\out\env_report.json"
 if exist "%REPORT_PATH%" (
     start notepad "%REPORT_PATH%"
+    powershell -NoProfile -Command "try { Get-Content -Raw '%REPORT_PATH%' | Set-Clipboard; Write-Host 'Report copied to clipboard.' } catch { Write-Host 'Clipboard unavailable; report opened in Notepad.' }"
 ) else (
     echo Report not found: %REPORT_PATH%
 )
@@ -121,4 +115,5 @@ goto MENU
 
 :END
 echo Exiting WinMaintain. Goodbye!
+endlocal
 exit /b

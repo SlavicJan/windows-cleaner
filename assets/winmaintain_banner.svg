@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="WinMaintain banner">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0b6cf0"/>
+      <stop offset="100%" stop-color="#7bd5f5"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="260" rx="32" fill="url(#bg)"/>
+  <text x="80" y="150" font-family="Segoe UI, Inter, system-ui" font-size="64" font-weight="700" fill="#ffffff">WinMaintain</text>
+  <text x="82" y="190" font-family="Segoe UI, Inter, system-ui" font-size="26" fill="#e8f4ff">Audit • Cleanup • Backup • Reports</text>
+  <g transform="translate(920,60)">
+    <rect x="0" y="0" width="220" height="140" rx="20" fill="#ffffff" opacity="0.12"/>
+    <circle cx="48" cy="50" r="28" fill="#ffffff" opacity="0.85"/>
+    <path d="M44 48l6 6 12-16" stroke="#0b6cf0" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="90" y="40" width="110" height="20" rx="6" fill="#ffffff" opacity="0.9"/>
+    <rect x="90" y="70" width="80" height="16" rx="6" fill="#ffffff" opacity="0.75"/>
+  </g>
+</svg>

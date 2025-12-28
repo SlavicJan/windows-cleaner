@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="WinMaintain icon">
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b6cf0"/>
+      <stop offset="100%" stop-color="#45c4f9"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#iconGradient)"/>
+  <path d="M74 154l30 30 78-102" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M74 104l22 22 48-60" fill="none" stroke="#e8f4ff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+  <circle cx="180" cy="82" r="8" fill="#ffffff"/>
+</svg>
