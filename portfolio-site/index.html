@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jan — Аналитика данных и маркетинга</title>
+    <meta
+      name="description"
+      content="Сайт-визитка аналитика данных и маркетинга: кейсы, услуги, контакты и форма заявки."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-wrap">
+        <a href="#top" class="logo">Jan.Analytics</a>
+        <nav>
+          <a href="#services">Услуги</a>
+          <a href="#cases">Кейсы</a>
+          <a href="#contacts">Контакты</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="container hero-grid">
+          <div>
+            <p class="badge">Data & Marketing Analytics</p>
+            <h1>
+              Помогаю бизнесу принимать решения на основе данных, а не догадок
+            </h1>
+            <p class="hero-text">
+              Я аналитик с опытом в страховании, маркетинге и продуктовой
+              аналитике. Строю отчётность, считаю метрики, нахожу точки роста и
+              автоматизирую рутинные процессы.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#cases">Смотреть кейсы</a>
+              <a class="btn btn-ghost" href="#contacts">Связаться</a>
+            </div>
+          </div>
+          <aside class="hero-card">
+            <h2>Чем полезен для вас</h2>
+            <ul>
+              <li>SQL + Excel + Python аналитика</li>
+              <li>Дашборды в Power BI / Metabase</li>
+              <li>Маркетинговые и продуктовые метрики</li>
+              <li>Сегментация клиентов и RFM</li>
+              <li>Автоматизация отчётов и ETL</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <section id="services" class="section">
+        <div class="container">
+          <h2>Услуги</h2>
+          <p class="section-lead">
+            Формат работы: разовая задача, проектная аналитика или постоянное
+            сопровождение.
+          </p>
+          <div class="service-grid">
+            <article class="service-card">
+              <h3>Маркетинговая аналитика</h3>
+              <p>
+                ROMI, каналы привлечения, воронки, сегментация аудитории и
+                рекомендации по рекламным бюджетам.
+              </p>
+            </article>
+            <article class="service-card">
+              <h3>Продуктовая аналитика</h3>
+              <p>
+                DAU/MAU/WAU, retention, sticky factor, LTV/ARPU, анализ
+                поведения пользователей и гипотез роста.
+              </p>
+            </article>
+            <article class="service-card">
+              <h3>BI и отчётность</h3>
+              <p>
+                Построение понятных dashboard’ов для руководителя, маркетолога,
+                продуктовой и финансовой команды.
+              </p>
+            </article>
+            <article class="service-card">
+              <h3>Автоматизация аналитики</h3>
+              <p>
+                Автоматический сбор, очистка и обновление данных (Python + SQL)
+                вместо ручной рутины в Excel.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="cases" class="section section-dark">
+        <div class="container">
+          <h2>Кейсы (горизонтальная лента)</h2>
+          <p class="section-lead">
+            Листайте горизонтально и нажмите на карточку — она перевернётся и
+            покажет краткое описание.
+          </p>
+
+          <div class="cases-strip" aria-label="Лента кейсов">
+            <article class="case-card" tabindex="0">
+              <div class="case-inner">
+                <div class="case-face case-front">
+                  <div class="case-image placeholder">Кейс #1</div>
+                  <h3>Страхование и маркетинг</h3>
+                </div>
+                <div class="case-face case-back">
+                  <p>
+                    Анализ продаж и рекламных активностей по видам страхования.
+                    Выявлены более эффективные каналы и сегменты для роста.
+                  </p>
+                  <span>Стек: SQL, Excel, Power BI</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="case-card" tabindex="0">
+              <div class="case-inner">
+                <div class="case-face case-front">
+                  <div class="case-image placeholder">Кейс #2</div>
+                  <h3>RFM и сегментация</h3>
+                </div>
+                <div class="case-face case-back">
+                  <p>
+                    Проведён RFM-анализ клиентской базы. Подготовлены сегменты и
+                    рекомендации, которые помогли усилить лояльность и средний чек.
+                  </p>
+                  <span>Стек: SQL, Python, Metabase</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="case-card" tabindex="0">
+              <div class="case-inner">
+                <div class="case-face case-front">
+                  <div class="case-image placeholder">Кейс #3</div>
+                  <h3>Сервис самокатов</h3>
+                </div>
+                <div class="case-face case-back">
+                  <p>
+                    Комплексный анализ сезонности, временных интервалов и цены
+                    поездок. Сформирована гипотеза динамического ценообразования.
+                  </p>
+                  <span>Стек: Python, pandas, seaborn</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="case-card" tabindex="0">
+              <div class="case-inner">
+                <div class="case-face case-front">
+                  <div class="case-image placeholder">Кейс #4</div>
+                  <h3>Корпоративное обучение</h3>
+                </div>
+                <div class="case-face case-back">
+                  <p>
+                    Self-service дашборды для разных ролей: активность,
+                    успеваемость, ROI и узкие места программ обучения.
+                  </p>
+                  <span>Стек: SQL, Power BI, Metabase</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="case-card" tabindex="0">
+              <div class="case-inner">
+                <div class="case-face case-front">
+                  <div class="case-image placeholder">Кейс #5</div>
+                  <h3>ABC–XYZ в аптечной сети</h3>
+                </div>
+                <div class="case-face case-back">
+                  <p>
+                    ABC/XYZ-анализ товарной матрицы и рекомендации по запасам.
+                    Снижение избыточного склада примерно на 20%.
+                  </p>
+                  <span>Стек: PostgreSQL, Python</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="case-card" tabindex="0">
+              <div class="case-inner">
+                <div class="case-face case-front">
+                  <div class="case-image placeholder">Кейс #6</div>
+                  <h3>Автоматизация отчётности</h3>
+                </div>
+                <div class="case-face case-back">
+                  <p>
+                    ETL-скрипт на Python + запуск по расписанию. Время на
+                    еженедельный отчёт сокращено с ~3 часов до ~5 минут проверки.
+                  </p>
+                  <span>Стек: Python, psycopg2, Task Scheduler</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <p class="muted">
+            Вместо заглушек можно вставить ваши скриншоты/баннеры — блок уже
+            подготовлен под изображения.
+          </p>
+        </div>
+      </section>
+
+      <section id="contacts" class="section">
+        <div class="container contacts-grid">
+          <div>
+            <h2>Контакты</h2>
+            <p class="section-lead">
+              Готов обсудить задачу, оценить сроки и предложить решение под ваш
+              бизнес.
+            </p>
+            <div class="contact-links">
+              <a href="https://t.me/your_username" target="_blank" rel="noreferrer">Telegram</a>
+              <a href="mailto:you@example.com">Email</a>
+              <a href="https://wa.me/000000000000" target="_blank" rel="noreferrer">WhatsApp</a>
+            </div>
+          </div>
+
+          <form class="contact-form" action="#" method="post" onsubmit="return false;">
+            <label>
+              Ваше имя
+              <input type="text" name="name" placeholder="Иван" required />
+            </label>
+            <label>
+              Контакт для ответа
+              <input type="text" name="contact" placeholder="@telegram или email" required />
+            </label>
+            <label>
+              Вопрос / задача
+              <textarea name="message" rows="5" placeholder="Кратко опишите задачу" required></textarea>
+            </label>
+            <button class="btn btn-primary" type="submit">Отправить заявку</button>
+            <p class="muted form-note">
+              Это готовый визуальный шаблон. Для реальной отправки можно
+              подключить Formspree / Telegram Bot / backend.
+            </p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© <span id="year"></span> Jan.Analytics — аналитика, отчётность, рост бизнеса.</p>
+      </div>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
